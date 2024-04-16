@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/game.css">
+    <title>RPS</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="intro">
+            <h2>Play Rock-Paper-Scissors with <span id="receiver">{{ receiver }}</span></h2>
+            <p>
+            <div id="choose-win-amount">Please choose the amount of wins the match will have:
+                <input id="wins-required" type="number"><button id="wins-required-btn"
+                    onclick="sendNumWins()">Submit</button>
+            </div>
+        </div>
+        </p>
+        <div id="game" style="display: none;">
+            <h3>Round <span id="round-count">1</span></h3>
+            <p>First to <span id="agreed_win_amount">3</span> wins, wins the game</p>
+            <div id="choice-section">
+                <h3>Make your choice:</h3>
+                <input type="radio" name="choice" value="rock" id="rock"><label for="rock">Rock</label>
+                <input type="radio" name="choice" value="paper" id="paper"><label for="paper">Paper</label>
+                <input type="radio" name="choice" value="scissors" id="scissors"><label for="scissors">Scissors</label>
+                <br><button id="submit-btn" onclick="sendChoice()">Submit Choice</button>
+            </div>
+            <div id="user-choice-section" style="display: none;">
+                <p id="user-choice-text">Waiting for your choice...</p>
+            </div>
+            <div id="opponent-choice-section" style="display: none;">
+                <p id="opponent-choice-text">Waiting on opponent...</p>
+            </div>
+            <div id="result-section">
+                <p id="result-text"></p>
+            </div>
+            <div><button id="next-round-btn" onclick="nextRound()" disabled="true">Next Round</button></div>
+            <p>Score:
+            <p></p>
+            <span id="user-score">0</span> - <span id="opponent-score">0</span>
+            </p>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+        <script>
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+            var userChoiceSection = document.getElementById('user-choice-section');
+            var userChoiceText = document.getElementById('user-choice-text');
+            var choiceSection = document.getElementById('choice-section');
+            var opponentChoiceSection = document.getElementById('opponent-choice-section');
+            var opponentChoiceText = document.getElementById('opponent-choice-text');
+            var resultText = document.getElementById('result-text');
+            var opp_score = document.getElementById("opponent-score");
+            var user_score = document.getElementById("user-score");
+            var nextRoundButton = document.getElementById("next-round-btn");
+
+            function sendNumWins() {
+                var winsRequired = document.getElementById("wins-required");
+                var winsRequiredBtn = document.getElementById("wins-required-btn");
+                var receiver = document.getElementById("receiver");
+                win_amount = winsRequired.value;
+                socket.emit('offer_win_count', { receiver: receiver.innerText, win_amount: win_amount });
+                winsRequiredBtn.disabled = true;
+            }
+
+            function nextRound() {
+                var nextRoundButton = document.getElementById("next-round-btn");
+                var userChoiceSection = document.getElementById('user-choice-section');
+                var userChoiceText = document.getElementById('user-choice-text');
+                var opponentChoiceSection = document.getElementById('opponent-choice-section');
+                var opponentChoiceText = document.getElementById('opponent-choice-text');
+                var resultText = document.getElementById('result-text');
+                var roundCount = document.getElementById('round-count');
+                var text = document.createTextNode(" (Previous Round) ");
+                opponentChoiceText.appendChild(text);
+                socket.emit('empty_previous_result', { receiver: '{{ receiver }}' });
+                socket.emit('for_unblock', { receiver: '{{ receiver }}' });
+                userChoiceSection.style.display = "none";
+                userChoiceText.innerText = "Waiting for your choice...";
+                opponentChoiceSection.style.display = "none";
+                opponentChoiceText.innerText = "Waiting on opponent...";
+                resultText.innerText = ""
+                roundCount.innerHTML = parseInt(roundCount.innerHTML) + 1;
+                nextRoundButton.disabled = true;
+            }
+            socket.on("unblock", function () {
+                var btn = document.getElementById("submit-btn");
+                btn.disabled = false;
+            });
+            socket.on("emptying", function () {
+                var text = document.createTextNode(" (Previous Round) ");
+                opponentChoiceText.appendChild(text);
+            });
+            socket.on('accept_win_count', function (data) {
+                if (confirm("Your opponent wants to play till one of you win " + data.win_amount + " times, is this acceptable?")) {
+                    var chooseWinAmount = document.getElementById("choose-win-amount");
+                    var game = document.getElementById("game");
+                    var agreedWinAmount = document.getElementById("agreed_win_amount");
+                    agreedWinAmount.innerHTML = data.win_amount;
+                    chooseWinAmount.style.display = "none";
+                    game.style.display = "block";
+                    socket.emit('accept_amount', { receiver: '{{receiver}}', win_amount: data.win_amount });
+                }
+            });
+            socket.on('win_count_accepted', function (data) {
+                var chooseWinAmount = document.getElementById("choose-win-amount");
+                var game = document.getElementById("game");
+                var agreedWinAmount = document.getElementById("agreed_win_amount");
+                agreedWinAmount.innerHTML = data.win_amount;
+                chooseWinAmount.style.display = "none";
+                game.style.display = "block";
+                socket.emit('game_started', { receiver: '{{receiver}}' });
+            }
+            );
+            socket.on('opponent_choice', function (data) {
+                opponentChoiceText.textContent = data.sender + "'s choice: " + data.choice;
+                if (userChoiceText.innerText != "Waiting for your choice...") {
+                    var words = userChoiceText.innerText.split(" ");
+                    userChoice = words[words.length - 1];
+                    if (data.choice == userChoice) {
+                        resultText.innerHTML = "You Tied!";
+                    }
+                    else if (data.choice == "paper") {
+                        if (userChoice == "rock") {
+                            resultText.innerHTML = "You Lost!";
+                        }
+                        else {
+                            resultText.innerHTML = "You Won!";
+                        }
+                    }
+                    else if (data.choice == "rock") {
+                        if (userChoice == "scissors") {
+                            resultText.innerHTML = "You Lost!";
+                        }
+                        else {
+                            resultText.innerHTML = "You Won!";
+                        }
+                    }
+                    else if (data.choice == "scissors") {
+                        if (userChoice == "paper") {
+                            resultText.innerHTML = "You Lost!";
+                        }
+                        else {
+                            resultText.innerHTML = "You Won!";
+                        }
+                    }
+                }
+                if (resultText.innerHTML == "You Lost!") {
+                    socket.emit('add_round_loss', { receiver: '{{ sender }}' });
+                    opp_score.innerHTML = parseInt(opp_score.innerHTML) + 1;
+                    nextRoundButton.disabled = false;
+                }
+                else if (resultText.innerHTML == "You Won!") {
+                    socket.emit('add_round_win', { receiver: '{{ sender }}' });
+                    user_score.innerHTML = parseInt(user_score.innerHTML) + 1;
+                    nextRoundButton.disabled = false;
+                }
+                else if (resultText.innerHTML == "You Tied!") {
+                    socket.emit('add_round_tied', { receiver: '{{ sender }}' });
+                    nextRoundButton.disabled = false;
+                }
+                var agreedWinAmount = document.getElementById("agreed_win_amount");
+                if (user_score.innerHTML == agreedWinAmount.innerHTML) {
+                    socket.emit('add_game_win', { receiver: '{{ sender }}' });
+                    alert("You won the game, Congrats!");
+                    history.go(-1);
+                }
+                else if (opp_score.innerHTML == agreedWinAmount.innerHTML) {
+                    socket.emit('add_game_loss', { receiver: '{{ sender }}' });
+                    alert("You lost to your opponent, better luck next time!")
+                    history.go(-1);
+                }
+                socket.emit('add_round_played', { receiver: '{{ sender }}' });
+            });
+
+            function sendChoice() {
+                var choiceInput = document.querySelector('input[name="choice"]:checked');
+                var resultText = document.getElementById("result-text");
+                var btn = document.getElementById("submit-btn");
+                var userChoiceText = document.getElementById('user-choice-text');
+                var opponentChoiceText = document.getElementById('opponent-choice-text');
+                userChoiceText.innerText = "You chose: " + choiceInput.value;
+                userChoiceSection.style.display = "block";
+                if (choiceInput) {
+                    var choice = choiceInput.value;
+                    socket.emit('game_choice', { sender: '{{sender}}', receiver: '{{ receiver }}', choice: choice });
+                    btn.disabled = true; // Hide the choice section after submitting a choice
+                    if (opponentChoiceText.innerHTML == "Waiting on opponent...") {
+                        opponentChoiceSection.style.display = 'block';
+                    } else {
+                        var words = opponentChoiceText.innerText.split(" ");
+                        opp_choice = words[words.length - 1];
+                        opponentChoiceSection.style.display = 'block';
+                        if (userChoiceText.innerText != "Waiting for your choice...") {
+                            if (opp_choice == choiceInput.value) {
+                                socket.emit('add_round_tied', { receiver: '{{ sender }}' });
+                                resultText.innerHTML = "You Tied!";
+                            }
+                            else if (opp_choice == "paper") {
+                                if (choiceInput.value == "rock") {
+                                    resultText.innerHTML = "You Lost!";
+                                }
+                                else if (choiceInput.value == "scissors") {
+                                    resultText.innerHTML = "You Won!";
+                                }
+                            }
+                            else if (opp_choice == "rock") {
+                                if (choiceInput.value == "scissors") {
+                                    resultText.innerHTML = "You Lost!";
+                                }
+                                else if (choiceInput.value == "paper") {
+                                    resultText.innerHTML = "You Won!";
+                                }
+                            }
+                            else if (opp_choice == "scissors") {
+                                if (choiceInput.value == "paper") {
+                                    resultText.innerHTML = "You Lost!";
+                                }
+                                else if (choiceInput.value == "rock") {
+                                    resultText.innerHTML = "You Won!";
+                                }
+                            }
+                            if (resultText.innerHTML == "You Lost!") {
+                                socket.emit('add_round_loss', { receiver: '{{ sender }}' });
+                                opp_score.innerHTML = parseInt(opp_score.innerHTML) + 1;
+                            }
+                            else if (resultText.innerHTML == "You Won!") {
+                                socket.emit('add_round_win', { receiver: '{{ sender }}' });
+                                user_score.innerHTML = parseInt(user_score.innerHTML) + 1;
+                            }
+                            nextRoundButton.disabled = false;
+                            var agreedWinAmount = document.getElementById("agreed_win_amount");
+                            if (user_score.innerHTML == agreedWinAmount.innerHTML) {
+                                socket.emit('add_game_win', { receiver: '{{ sender }}' });
+                                alert("You won the game, Congrats!");
+                                history.go(-1);
+                            }
+                            else if (opp_score.innerHTML == agreedWinAmount.innerHTML) {
+                                socket.emit('add_game_loss', { receiver: '{{ sender }}' });
+                                alert("You lost to your opponent, better luck next time!")
+                                history.go(-1);
+                            }
+                            socket.emit('add_round_played', { receiver: '{{ sender }}' });
+                        }
+                    }
+                } else {
+                    alert('Please select a choice.');
+                }
+            }
+        </script>
+    </div>
+</body>
+
+</html>

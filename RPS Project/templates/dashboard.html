@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/dashboard.css">
+    <title>RPS Dashboard</title>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <nav>
+            <a href="{{url_for('profile')}}">View your Profile</a>
+            <br>
+            <a href="{{url_for('player_list')}}">Find a Player to Challenge!</a>
+            <br>
+            <a href="{{url_for('logout')}}">Log Out</a>
+        </nav>
+
+        <div class="content">
+            <h2>You managed to log-in, congrats!</h2>
+            <p>Feel free to explore the links above!</p>
+        </div>
+    </div>
+</body>
+
+</html>

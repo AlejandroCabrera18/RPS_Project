@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNT5715's Rock Paper Scissors Sign up Form</title>
+    <link rel="stylesheet" href="../static/sign_up.css">
+    <script src="https://kit.fontawesome.com/df91bafa06.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <form method="POST" action="">
+        {{form.hidden_tag()}}
+        <div class="container">
+            <div class="form-box">
+                <h1 id="title">Sign Up</h1>
+                <form>
+                    <div class="input-group">
+                        <div class="input-field">
+                            <i class="fa-solid fa-user"></i>
+                            {{form.username}}
+                        </div>
+                        <div class="input-field">
+                            <i class="fa-solid fa-lock"></i>
+                            {{form.password}}
+                        </div>
+                        <div class="register_submit">
+                            <button class="btn-field" id="register">{{form.register_submit}}</button>
+                        </div>
+                    </div>
+                    <p>Already have an account? <a href="{{url_for('log_in')}}">Click here to Log in!</a></p>
+                </form>
+            </div>
+        </div>
+    </form>
+</body>
+
+</html>

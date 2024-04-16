@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+</head>
+
+<body>
+    <h2>User Profile</h2>
+    <div>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Date Joined:</strong> {{ user.finished }}</p>
+        <p><strong>Number of RPS rounds played:</strong> {{ user.num_of_rounds_played }}</p>
+        <p><strong>Number of RPS rounds won:</strong> {{ user.round_win }}</p>
+        <p><strong>Number of RPS rounds lost:</strong> {{ user.round_loss }}</p>
+        <p><strong>Number of RPS rounds tied:</strong> {{ user.round_tied }}</p>
+        <p><strong>Number of RPS games won:</strong> {{ user.game_win }}</p>
+        <p><strong>Number of RPS games lost:</strong> {{ user.game_loss }}</p>
+        <p><strong>Previous matches:</strong></p>
+        <ul>
+            {% for match in matches %}
+            <li>Match with: {{ match.opponent_username }} <br>Started: {{ match.date_of_match_start }} <br>Ended: {{
+                match.date_of_match_end }} <br> Game Result: {{ match.result }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+
+</html>

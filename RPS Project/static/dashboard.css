@@ -1,0 +1,61 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    /* Updated to column */
+    align-items: center;
+    /* Align links in the center */
+    background-color: #333;
+    padding: 10px 0;
+}
+
+nav a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 18px;
+    margin: 5px 0;
+    /* Added margin for spacing between links */
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #ff9900;
+}
+
+.content {
+    padding: 20px;
+}
+
+/* Additional styling for a more epic look */
+h2 {
+    color: #ff9900;
+}
+
+p {
+    color: #555;
+}
+
+.footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+}

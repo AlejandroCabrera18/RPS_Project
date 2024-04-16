@@ -1,0 +1,72 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    height: 100vh;
+    background-image: linear-gradient(rgba(0, 0, 50, 0.8), rgba(0, 0, 50, 0.8)), url(RockPaperScissor.jpg);
+    background-position: center;
+    background-size: cover;
+    position: relative;
+}
+
+.intro {
+    width: 90%;
+    max-width: 600px;
+    height: 70%;
+    max-height: 800px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 50px 60px 70px;
+    text-align: center;
+}
+
+#game {
+    width: 90%;
+    max-width: 600px;
+    height: 70%;
+    max-height: 800px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 50px 60px 70px;
+    text-align: center;
+}
+
+#wins-required {
+    background-color: greenyellow;
+}
+
+.choices {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px;
+}
+
+.choice-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.choice-label i {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+/* Style the selected label */
+.choice-label.selected {
+    border: 2px solid #ff9900;
+    border-radius: 5px;
+    padding: 5px;
+}

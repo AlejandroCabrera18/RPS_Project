@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/player_list.css">
+    <title>CNT5715's Rock Paper Scissors Player List</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Welcome, {{ username }}!</h2>
+        <p>Players online:</p>
+        <ul id="user-list" class="button-list"></ul>
+        <a href="{{url_for('dashboard')}}">Return to Dashboard</a>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function () {
+            {
+                socket.emit('update_list');
+            }
+        });
+
+        socket.on('user_list', function (data) {
+            var userList = document.getElementById('user-list');
+            userList.innerHTML = '';
+            data.users.forEach(function (user) {
+                var li = document.createElement('li');
+                var newBTN = document.createElement('button');
+                newBTN.textContent = user;
+                newBTN.className = "button";
+                li.appendChild(newBTN);
+                newBTN.addEventListener('click', function () {
+                    var receiver = user;
+                    socket.emit('request_game', { receiver: receiver });
+                });
+                userList.appendChild(li);
+            });
+        });
+
+        socket.on('game_request', function (data) {
+            if (confirm(data.sender + ' wants to play RPS with you. Do you accept?')) {
+                socket.emit('accept_request', { sender: data.sender });
+            }
+        });
+
+
+        socket.on('start_game', function (data) {
+            window.location.href = '/game?sender=' + data.sender + '&receiver=' + data.receiver;
+        });
+    </script>
+</body>
+
+</html>
